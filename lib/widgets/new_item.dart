@@ -1,8 +1,11 @@
+import 'dart:convert';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:shopping_list/data/categories.dart';
 import 'package:shopping_list/models/categories.dart';
 import 'package:shopping_list/models/grocery_item.dart';
+import 'package:http/http.dart' as http;
 
 class NewItem extends StatefulWidget {
   const NewItem({super.key});
@@ -21,12 +24,17 @@ class _NewItemState extends State<NewItem> {
     if (_formKey.currentState!.validate()) {
       //use to validate form
       _formKey.currentState!.save();
-      Navigator.of(context).pop(
-        GroceryItem(
-          id: DateTime.now().toString(),
-          name: _enteredName,
-          quantity: _enteredQuantity,
-          category: _selectedCategory,
+      final url = Uri.https("cursoflutter-2c5c1-default-rtdb.firebaseio.com",
+          "shopping-list.json");
+      http.post(
+        url,
+        headers: {"Content-type": "application/json"},
+        body: json.encode(
+          {
+            "name": _enteredName,
+            "quantity": _enteredQuantity.toString(),
+            "category": _selectedCategory.title,
+          },
         ),
       );
     }
@@ -51,11 +59,9 @@ class _NewItemState extends State<NewItem> {
                 maxLength: 50,
                 decoration: const InputDecoration(label: Text("Name")),
                 validator: (value) {
+                  print("Valor $value");
                   // user validator and put the logic between
-                  if (value == null ||
-                      value.isNotEmpty ||
-                      value.trim().length <= 1 ||
-                      value.length > 50) {
+                  if (value == null && value!.isEmpty) {
                     return "Must be between 1 and 50 characters.";
                   }
                   return null;
@@ -75,7 +81,7 @@ class _NewItemState extends State<NewItem> {
                       initialValue: _enteredQuantity.toString(),
                       validator: (value) {
                         if (value == null ||
-                            value.isNotEmpty ||
+                            value.isEmpty ||
                             int.tryParse(value) == null ||
                             int.tryParse(value)! <= 0) {
                           return "Must be a valid, positive number.";
