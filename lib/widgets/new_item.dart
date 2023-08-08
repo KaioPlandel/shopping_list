@@ -1,6 +1,8 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:shopping_list/data/categories.dart';
+import 'package:shopping_list/models/categories.dart';
+import 'package:shopping_list/models/grocery_item.dart';
 
 class NewItem extends StatefulWidget {
   const NewItem({super.key});
@@ -11,9 +13,23 @@ class NewItem extends StatefulWidget {
 
 class _NewItemState extends State<NewItem> {
   final _formKey = GlobalKey<FormState>(); //Add global key
+  String _enteredName = "";
+  int _enteredQuantity = 1;
+  var _selectedCategory = categories[Categories.vegetables]!;
 
   _saveItem() {
-    _formKey.currentState!.validate(); //use to validate form
+    if (_formKey.currentState!.validate()) {
+      //use to validate form
+      _formKey.currentState!.save();
+      Navigator.of(context).pop(
+        GroceryItem(
+          id: DateTime.now().toString(),
+          name: _enteredName,
+          quantity: _enteredQuantity,
+          category: _selectedCategory,
+        ),
+      );
+    }
   }
 
   @override
@@ -44,6 +60,9 @@ class _NewItemState extends State<NewItem> {
                   }
                   return null;
                 },
+                onSaved: (value) {
+                  _enteredName = value!;
+                },
               ),
               Row(
                 crossAxisAlignment: CrossAxisAlignment.end,
@@ -53,7 +72,7 @@ class _NewItemState extends State<NewItem> {
                       keyboardType: TextInputType.number,
                       decoration:
                           const InputDecoration(label: Text("Quantity")),
-                      initialValue: "1",
+                      initialValue: _enteredQuantity.toString(),
                       validator: (value) {
                         if (value == null ||
                             value.isNotEmpty ||
@@ -63,27 +82,39 @@ class _NewItemState extends State<NewItem> {
                         }
                         return null;
                       },
+                      onSaved: (value) {
+                        _enteredQuantity =
+                            int.parse(value!); //use to save value in variable
+                      },
                     ),
                   ),
                   Expanded(
-                    child: DropdownButtonFormField(items: [
-                      // other type of Form widget
-                      for (final category in categories.entries)
-                        DropdownMenuItem(
-                          value: category.value,
-                          child: Row(
-                            children: [
-                              Container(
-                                width: 16,
-                                height: 16,
-                                color: category.value.color,
-                              ),
-                              const SizedBox(width: 6),
-                              Text(category.value.title)
-                            ],
-                          ),
-                        )
-                    ], onChanged: (value) {}),
+                    child: DropdownButtonFormField(
+                      value: _selectedCategory,
+                      items: [
+                        // other type of Form widget
+                        for (final category in categories.entries)
+                          DropdownMenuItem(
+                            value: category.value,
+                            child: Row(
+                              children: [
+                                Container(
+                                  width: 16,
+                                  height: 16,
+                                  color: category.value.color,
+                                ),
+                                const SizedBox(width: 6),
+                                Text(category.value.title)
+                              ],
+                            ),
+                          )
+                      ],
+                      onChanged: (value) {
+                        setState(() {
+                          _selectedCategory = categories[value]!;
+                        });
+                      },
+                    ),
                   ),
                 ],
               ),
