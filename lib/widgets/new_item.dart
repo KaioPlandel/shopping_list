@@ -20,13 +20,13 @@ class _NewItemState extends State<NewItem> {
   int _enteredQuantity = 1;
   var _selectedCategory = categories[Categories.vegetables]!;
 
-  _saveItem() {
+  _saveItem() async {
     if (_formKey.currentState!.validate()) {
       //use to validate form
       _formKey.currentState!.save();
       final url = Uri.https("cursoflutter-2c5c1-default-rtdb.firebaseio.com",
           "shopping-list.json");
-      http.post(
+      final response = http.post(
         url,
         headers: {"Content-type": "application/json"},
         body: json.encode(
@@ -37,6 +37,11 @@ class _NewItemState extends State<NewItem> {
           },
         ),
       );
+
+      if(!context.mounted){
+        return;
+      }
+      Navigator.of(context).pop();
     }
   }
 
