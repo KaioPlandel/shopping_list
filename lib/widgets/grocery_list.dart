@@ -19,13 +19,17 @@ class _GroceryListState extends State<GroceryList> {
   List<GroceryItem> _groceryItems = [];
 
   void _loadItems() async {
-    final url = Uri.https("cursoflutter-2c5c1-default-rtdb.firebaseio.com", "shopping-list.json");
+    final url = Uri.https(
+        "cursoflutter-2c5c1-default-rtdb.firebaseio.com", "shopping-list.json");
     final response = await http.get(url);
     final Map<String, dynamic> listData = json.decode(response.body);
     final List<GroceryItem> _loadedItems = [];
 
     for (final item in listData.entries) {
-      final category = categories.entries.firstWhere((catItem) => catItem.value.title == item.value['category']).value;
+      final category = categories.entries
+          .firstWhere(
+              (catItem) => catItem.value.title == item.value['category'])
+          .value;
       _loadedItems.add(
         GroceryItem(
             id: item.key,
@@ -40,8 +44,17 @@ class _GroceryListState extends State<GroceryList> {
   }
 
   void _addItem() async {
-    await Navigator.of(context).push<GroceryItem>(
-        MaterialPageRoute(builder: (ctx) => const NewItem()));
+    final newItem = await Navigator.of(context).push<GroceryItem>(
+      MaterialPageRoute(
+        builder: (ctx) => const NewItem(),
+      ),
+    );
+    if (newItem == null) {
+      return;
+    }
+    setState(() {
+      _groceryItems.add(newItem);
+    });
   }
 
   void _removeItem(GroceryItem item) {
